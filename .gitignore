@@ -161,3 +161,7 @@ cython_debug/
 
 # Raw data files to retrieve
 data/
+
+# llamaindex storage
+storage/
+qdrant_storage/

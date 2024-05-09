@@ -1,2 +1,9 @@
 llama-index==0.10.35
 langchain==0.1.19
+
+# Vector DB, and interface from the frameworks
+qdrant-client
+llama-index-vector-stores-qdrant
+
+# Embedding
+llama-index-embeddings-huggingface
