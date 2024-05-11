@@ -43,6 +43,7 @@ def _xform_and_ingest(
 
 
 def _load_file() -> list[Document]:
+    # Detects ext; use pypdf for .pdf
     documents = SimpleDirectoryReader(
         input_files=[PDF_FILENAME]
     ).load_data()
@@ -51,7 +52,10 @@ def _load_file() -> list[Document]:
 
 
 def etl():
-    # Splits into chunks, each of which is of its size that honors sentence boundary
+    documents = _load_file()
+
+    # A function that splits documents into chunks
+    # (each of which is of its size that honors sentence boundary)
     node_parser = SentenceSplitter(
         chunk_size=512, chunk_overlap=128
     )
@@ -62,8 +66,6 @@ def etl():
         model_name="BAAI/bge-base-zh-v1.5",
         cache_folder=os.path.expanduser("~/.cache/huggingface/hub")
     )
-
-    documents = _load_file()
 
     _xform_and_ingest(
         documents=documents,
