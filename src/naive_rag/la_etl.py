@@ -6,7 +6,6 @@ from langchain_community.vectorstores import Qdrant
 from langchain_core.documents import Document
 from langchain_core.embeddings import Embeddings
 from langchain_text_splitters import RecursiveCharacterTextSplitter, TextSplitter
-from qdrant_client import QdrantClient
 
 from src.naive_rag.constants import PDF_FILENAME
 
