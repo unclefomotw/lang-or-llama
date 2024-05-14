@@ -53,8 +53,10 @@ def query():
     llm = _get_customized_llm()
     memory = _get_memory("user-24601-conv-1337")
 
-    # dissect from index.as_chat_engine(chat_mode, llm, **kwargs)
+    # Dissect from index.as_chat_engine(chat_mode, llm, **kwargs)
     # for clearer retriever assignment
+    # This internally calculates LLM context limit so that the history
+    # stuffed in the "Answering" call can still fit after prepend with the retrieved knowledge
     chat_engine = CondensePlusContextChatEngine.from_defaults(
         retriever=retriever,
         llm=llm,
