@@ -56,6 +56,8 @@ def query():
     prompt_template = _get_customized_prompt_template()
     llm = _get_customized_llm()
 
+    # The point here is not about the "pipe" operator
+    # The point here is their "Runnable" class that hide those batch/stream/... behind
     rag_chain = (
         {'context': retriever | _format_docs, 'query': RunnablePassthrough()}
         | prompt_template

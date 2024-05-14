@@ -87,6 +87,10 @@ def _get_retriever():
 
 
 def query():
+    # To be fair these can be wrapped into one `index.as_query_engine()`, where
+    # you can pass LLM and how you want to construct the retriever
+    # So the point of the comparison is NOT about the number of lines, especially
+    # I write them in a slightly lower level way (for the sake of revealing the blackbox)
     retriever = _get_retriever()
     prompt_template = _get_customized_prompt_template()
     llm = _get_customized_llm()
