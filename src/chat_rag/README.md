@@ -23,13 +23,13 @@ It does NOT push the limit of two frameworks on
 ```bash
 ### ETL (once)
 # LangChain
-$ PYTHONPATH=$(pwd) python src/chat_rag/la_etl.py 
+$ PYTHONPATH=$(pwd) python src/chat_rag/la_etl.py
 # LlamaIndex
 $ PYTHONPATH=$(pwd) python src/chat_rag/ll_etl.py
 
 ### Inference
 # LangChain
-$ PYTHONPATH=$(pwd) python src/chat_rag/la_rag.py 
+$ PYTHONPATH=$(pwd) python src/chat_rag/la_rag.py
 # LlamaIndex
 $ PYTHONPATH=$(pwd) python src/chat_rag/ll_rag.py
 ```
