@@ -1,10 +1,10 @@
 import os
 
 from langchain_community.document_loaders import PyPDFLoader
-from langchain_community.embeddings import HuggingFaceEmbeddings
-from langchain_community.vectorstores import Qdrant
 from langchain_core.documents import Document
 from langchain_core.embeddings import Embeddings
+from langchain_huggingface import HuggingFaceEmbeddings
+from langchain_qdrant import Qdrant
 from langchain_text_splitters import RecursiveCharacterTextSplitter, TextSplitter
 
 from src.naive_rag.constants import PDF_FILENAME

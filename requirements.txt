@@ -1,9 +1,16 @@
 llama-index==0.10.35
-langchain==0.1.19
+langchain==0.2.0
+# Some features are still in langchain-community, e.g. PDF
+langchain-community
+
+# LLM
+langchain-openai
 
 # Vector DB, and interface from the frameworks
 qdrant-client
+langchain-qdrant
 llama-index-vector-stores-qdrant
 
 # Embedding
+langchain-huggingface
 llama-index-embeddings-huggingface

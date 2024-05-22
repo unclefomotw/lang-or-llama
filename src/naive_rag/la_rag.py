@@ -1,15 +1,23 @@
 import os
 
-from langchain_community.chat_models import ChatOpenAI
-from langchain_community.embeddings import HuggingFaceEmbeddings
-from langchain_community.vectorstores import Qdrant
 from langchain_core.output_parsers import StrOutputParser
 from langchain_core.prompts import ChatPromptTemplate
 from langchain_core.runnables import RunnablePassthrough
+from langchain_huggingface import HuggingFaceEmbeddings
+from langchain_openai import ChatOpenAI
+from langchain_qdrant import Qdrant
 from qdrant_client import QdrantClient
 
 from src.naive_rag.constants import SYSTEM_PROMPT
 from src.naive_rag.constants import USER_PROMPT
+
+
+# In LangChain 0.2, langchain package no longer requires langchain-community
+# and some integrations happen in langchain-[partner] (but some not)
+# See https://python.langchain.com/v0.2/docs/versions/overview/#tldr
+# from langchain_community.chat_models import ChatOpenAI
+# from langchain_community.embeddings import HuggingFaceEmbeddings
+# from langchain_community.vectorstores import Qdrant
 
 
 def _get_customized_prompt_template():
