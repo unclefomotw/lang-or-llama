@@ -14,3 +14,9 @@ llama-index-vector-stores-qdrant
 # Embedding
 langchain-huggingface
 llama-index-embeddings-huggingface
+
+# Agent
+langgraph
+
+# Instrumentation
+langtrace-python-sdk
