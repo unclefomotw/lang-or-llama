@@ -20,3 +20,4 @@ langgraph
 
 # Instrumentation
 langtrace-python-sdk
+langsmith

@@ -1,13 +1,16 @@
 # Copied from https://docs.llamaindex.ai/en/stable/examples/agent/openai_agent/
 #
 # In this example, LlamaIndex DOES leverage the tool use supported by OpenAI API,
-# despite there's almost no difference is using the agent (see `ll_agent.py`)
+# despite there's almost no difference is using the agent (see `ll_agent.py`).
+# On the other hand, the LLM calls do not contain a system prompt by default
+# probably because it's not necessary when OpenAI API supports tool use natively
 #
 # BTW, it seems langtrace-python-sdk 2.0.13 cannot handle ChatCompletionMessageToolCall
 # used by LlamaIndex internally when using openai agent, so I will just turn it off for now
 #
 
-import os
+import logging
+import sys
 
 # LangTrace: Must precede any llm module imports
 # from langtrace_python_sdk import langtrace
@@ -17,6 +20,8 @@ from llama_index.core.tools import FunctionTool
 from llama_index.llms.openai import OpenAI
 
 # langtrace.init(api_key=os.getenv("LANGTRACE_API_KEY"))
+logging.basicConfig(stream=sys.stdout, level=logging.DEBUG)
+logging.getLogger().addHandler(logging.StreamHandler(stream=sys.stdout))
 
 
 def multiply(a: int, b: int) -> int:
