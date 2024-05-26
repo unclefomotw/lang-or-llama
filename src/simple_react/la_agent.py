@@ -1,3 +1,9 @@
+# Derived from multiple official docs
+#
+# The graph is about going back and forth between "agent" node and "tools" node:
+# "tools" always goes to "agent", and depending on whether the last assistant message is
+# to use tools or not, it can go to "tools" or END
+#
 from langchain_core.messages import HumanMessage
 from langchain_core.tools import tool
 from langchain_openai import ChatOpenAI
