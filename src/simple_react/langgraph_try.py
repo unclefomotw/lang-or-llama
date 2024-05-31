@@ -17,7 +17,7 @@ def fn_1(state: MyState) -> None:
 
 def fn_2(state: MyState) -> MyState:
     """Function No. 2"""
-    time.sleep(4)
+    time.sleep(10)
     print(f"====== FUNC 2: get {state}")
     return {"foo": "fn2"}
 
@@ -25,7 +25,7 @@ def fn_2(state: MyState) -> MyState:
 def fn_3(state: MyState) -> MyState:
     """Function No. 3"""
     # XXX: try to execute before fn_2, yes... but not what you expect
-    time.sleep(3)
+    time.sleep(6)
     print(f"====== FUNC 3: get {state}")
     return {"foo": "fn3"}
 
