@@ -11,6 +11,9 @@ Basic comparison
 * ll_openai_agent.py - ReAct on LlamaIndex; achieved via OpenAI GPT model's "tool use"
 * la_agent.py - ReAct on LangChain/LangGraph; achieved via "tool use" (not necessarily OpenAI's)
 
+Real (?) ReAct implementation
+* ll_agent_with_custom_prompt.py - Few-shot learning similar to the original paper (in LlamaIndex)
+
 As a "workflow" engine
 * llamaindex_try.py - Toy example of building a workflow in LlamaIndex
 * langgraph_try.py - Toy example of building a workflow in LangGraph
