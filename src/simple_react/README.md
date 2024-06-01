@@ -8,8 +8,8 @@ https://docs.llamaindex.ai/en/stable/examples/agent/react_agent/
 ### Files
 Basic comparison
 * ll_agent.py - ReAct on LlamaIndex; use prompt engineering rather than "tool use" from LLM
-* ll_openai_agent.py - ReAct on LlamaIndex; achieved via OpenAI GPT model's "tool use"
-* la_agent.py - ReAct on LangChain/LangGraph; achieved via "tool use" (not necessarily OpenAI's)
+* ll_agent_with_tool_llm.py - ReAct on LlamaIndex; achieved via OpenAI GPT model's "tool use"
+* la_agent_with_tool_llm.py - ReAct on LangChain/LangGraph; achieved via "tool use" (not necessarily OpenAI's)
 
 Real (?) ReAct implementation
 * ll_agent_with_custom_prompt.py - Few-shot learning similar to the original paper (in LlamaIndex)
