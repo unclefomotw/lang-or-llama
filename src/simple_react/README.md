@@ -5,6 +5,20 @@ This is inspired by the example from LlamaIndex:
 https://docs.llamaindex.ai/en/stable/examples/agent/react_agent/
 
 
+### Files
+Basic comparison
+* ll_agent.py - ReAct on LlamaIndex; use prompt engineering rather than "tool use" from LLM
+* ll_openai_agent.py - ReAct on LlamaIndex; achieved via OpenAI GPT model's "tool use"
+* la_agent.py - ReAct on LangChain/LangGraph; achieved via "tool use" (not necessarily OpenAI's)
+
+As a "workflow" engine
+* llamaindex_try.py - Toy example of building a workflow in LlamaIndex
+* langgraph_try.py - Toy example of building a workflow in LangGraph
+
+Just some dumb use case
+* story_teller.py - A more interesting example using LangChain's ReAct agent
+
+
 ### Instrumentation
 
 To observe LLM calls, I also do instrumentation here.
