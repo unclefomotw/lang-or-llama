@@ -70,6 +70,28 @@ Generate python code for testing purpose
 {_problem_description}
 """
 
+REGEN_BY_ERROR_USER_PROMPT = """\
+The code you generated had errors and cannot pass QA.
+The following is the code you generated together with the QA test:
+
+{code}
+
+
+And the error was:
+
+{error}
+
+{human_comment}
+
+Learn from the errors and regenerate the solution using the same output protocol!
+"""
+
+REGEN_BY_COMMENT_USER_PROMPT = """\
+Regenerate the solution using the same output protocol
+
+{human_comment}
+"""
+
 TEST_CODE_VALIDATION_PROMPT = """\
 Given a coding problem:
 ```

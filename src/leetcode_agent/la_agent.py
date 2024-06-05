@@ -1,22 +1,25 @@
 import pprint
 from enum import Enum
-from typing import TypedDict
+from typing import TypedDict, Annotated, Sequence
 
 import requests
-from langchain_core.messages import SystemMessage, HumanMessage
+from langchain_core.messages import SystemMessage, HumanMessage, BaseMessage
 from langchain_openai import ChatOpenAI
 from langgraph.checkpoint import MemorySaver
 from langgraph.graph import END, StateGraph
+from langgraph.graph.message import add_messages
 from pydantic import BaseModel
 
 from src.leetcode_agent.problem import LeetCodeProblem, PROBLEM_1
 from src.leetcode_agent.prompt import (
-    TEST_CODE_GEN_USER_PROMPT,
+    MAIN_CODE_GEN_SYSTEM_PROMPT,
+    MAIN_CODE_GEN_USER_PROMPT,
+    REGEN_BY_COMMENT_USER_PROMPT,
+    REGEN_BY_ERROR_USER_PROMPT,
     TEST_CODE_GEN_SYSTEM_PROMPT,
+    TEST_CODE_GEN_USER_PROMPT,
     TEST_CODE_VALIDATION_PROMPT,
     TEST_CODE_VALIDATION_WITH_ERRORS_PROMPT,
-    MAIN_CODE_GEN_SYSTEM_PROMPT,
-    MAIN_CODE_GEN_USER_PROMPT
 )
 from src.leetcode_agent.util import extract_code, combine_test_with_code
 
@@ -55,13 +58,12 @@ class TestType(Enum):
 
 
 class AgentState(TypedDict):
+    main_coding_llm_messages: Annotated[list[BaseMessage], add_messages]
     problem: LeetCodeProblem
     main_code: str
     ai_test_code: str
-    example_test_code: str
     is_main_code_good: bool
     is_ai_test_code_good: bool
-    comment_on_test_code: str
     last_test_result: CodeExecutionResult
     last_test_type: TestType
     human_comment_on_main_code: str
@@ -69,9 +71,12 @@ class AgentState(TypedDict):
 
 def get_codegen_workflow() -> StateGraph:
     _llm = ChatOpenAI(model_name="gpt-3.5-turbo", temperature=0.001)
-    main_coding_llm = _llm
+
     test_coding_llm = _llm
     test_validation_llm = _llm
+
+    _system_message = SystemMessage(content=MAIN_CODE_GEN_SYSTEM_PROMPT)
+    main_coding_llm = (lambda messages: [_system_message] + messages) | _llm
 
     def node_generate_ai_test_code(state: AgentState):
         problem = state["problem"]
@@ -135,22 +140,45 @@ def get_codegen_workflow() -> StateGraph:
 
     def node_generate_main_code(state: AgentState):
         problem = state["problem"]
-        messages = [
-            SystemMessage(content=MAIN_CODE_GEN_SYSTEM_PROMPT),
-            HumanMessage(content=MAIN_CODE_GEN_USER_PROMPT.format(
-                problem_description=problem.problem_description,
-                example_description=problem.example_description,
-                solution_interface=problem.solution_interface
-            ))
-        ]
-        # TODO: memorize all the reflections, and generate
-        content = main_coding_llm.invoke(messages).content
+
+        if not state["main_code"]:
+            # There's no main code generated; 1st gen, no reflection yet
+            message = HumanMessage(
+                content=MAIN_CODE_GEN_USER_PROMPT.format(
+                    problem_description=problem.problem_description,
+                    example_description=problem.example_description,
+                    solution_interface=problem.solution_interface
+                ))
+            response = main_coding_llm.invoke([message])
+        else:
+            # Re-generate main code; reflect the previous error
+            history_messages = state["main_coding_llm_messages"]
+            last_test_result = state["last_test_result"]
+            human_comment = state["human_comment_on_main_code"] or ""
+            if last_test_result.has_error:
+                message = HumanMessage(
+                    content=REGEN_BY_ERROR_USER_PROMPT.format(
+                        code=last_test_result.code,
+                        error=last_test_result.stderr,
+                        human_comment=human_comment
+                    ))
+            else:
+                message = HumanMessage(
+                    content=REGEN_BY_COMMENT_USER_PROMPT.format(
+                        human_comment=human_comment
+                    ))
+            response = main_coding_llm.invoke(history_messages + [message])
+
+        content = response.content
 
         if not content:
-            return {"main_code": None}
-
-        code = extract_code(content, "===code-start===", "===code-end===")
-        return {"main_code": code}
+            code = None
+        else:
+            code = extract_code(content, "===code-start===", "===code-end===")
+        return {
+            "main_coding_llm_messages": [message, response],
+            "main_code": code
+        }
 
     def node_test_main_with_examples(state: AgentState):
         main_code = state["main_code"]
