@@ -14,11 +14,8 @@ def extract_code(content: str, head_sep: str, tail_sep: str) -> Optional[str]:
         return None
 
     potential_code = m.group(1)
-    # TODO: Can I avoid stripping manually and let AI reflect?
-    # stripped_3backslashes_code = re.sub(r"```(.*)", "", potential_code)
-    # return stripped_3backslashes_code
-
-    return potential_code
+    stripped_3backslashes_code = re.sub(r"```(.*)", "", potential_code)
+    return stripped_3backslashes_code
 
 
 def combine_test_with_code(main_code: str, test_code: str) -> str:
