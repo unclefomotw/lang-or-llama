@@ -1,6 +1,7 @@
+import argparse
 import pprint
 from enum import Enum
-from typing import TypedDict, Annotated, Sequence
+from typing import TypedDict, Annotated
 
 import requests
 from langchain_core.messages import SystemMessage, HumanMessage, BaseMessage
@@ -10,7 +11,7 @@ from langgraph.graph import END, StateGraph
 from langgraph.graph.message import add_messages
 from pydantic import BaseModel
 
-from src.leetcode_agent.problem import LeetCodeProblem, PROBLEM_1
+from src.leetcode_agent.problem import LeetCodeProblem, read_problem
 from src.leetcode_agent.prompt import (
     MAIN_CODE_GEN_SYSTEM_PROMPT,
     MAIN_CODE_GEN_USER_PROMPT,
@@ -266,18 +267,29 @@ def get_codegen_workflow() -> StateGraph:
     return workflow
 
 
-def main():
+def solve_leetcode(leetcode_problem: LeetCodeProblem):
     config = {"configurable": {"thread_id": "user-24601-conv-1337"}}
 
     graph = get_codegen_workflow().compile(
         checkpointer=MemorySaver()
     )
 
-    for s in graph.stream({"problem": PROBLEM_1}, config):
+    for s in graph.stream({"problem": leetcode_problem}, config):
         pprint.pprint(s, width=120)
 
     print("=== AI GENERATED SOLUTION ===")
     print(graph.get_state(config).values["main_code"])
+
+
+def main():
+    parser = argparse.ArgumentParser(description="Solve a leetcode problem")
+    parser.add_argument("dir_name", type=str,
+                        help="The directory containing necessary files of a leetcode problem.")
+    args = parser.parse_args()
+
+    # solve_leetcode(PROBLEM_1)
+    leetcode_problem = read_problem(args.dir_name)
+    solve_leetcode(leetcode_problem)
 
 
 if __name__ == '__main__':

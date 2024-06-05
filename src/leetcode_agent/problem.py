@@ -1,3 +1,6 @@
+from pathlib import Path
+from typing import Union
+
 from pydantic import BaseModel
 
 
@@ -6,6 +9,39 @@ class LeetCodeProblem(BaseModel):
     example_description: str
     solution_interface: str
     example_test_code: str
+
+
+class FileSizeTooLargeError(Exception):
+    def __init__(self, message):
+        self.message = message
+        super().__init__(self.message)
+
+
+def read_problem(directory: Union[str, Path]) -> LeetCodeProblem:
+    def _read_text(path: Path):
+        c = path.read_text()
+        if len(c) > 10 * 1024:
+            raise FileSizeTooLargeError(f"File {path} is too large; the limit is 10 K")
+        return c
+
+    if isinstance(directory, str):
+        directory = Path(directory)
+
+    if not directory.is_dir():
+        raise ValueError(f"`directory` must be a directory: {directory}")
+
+    problem_description = _read_text(directory / "DESCRIPTION")
+    example_description = _read_text(directory / "EXAMPLE")
+    solution_interface = _read_text(directory / "INTERFACE")
+    example_test_code = _read_text(directory / "TEST")
+    print(type(problem_description))
+
+    return LeetCodeProblem(
+        problem_description=problem_description,
+        example_description=example_description,
+        solution_interface=solution_interface,
+        example_test_code=example_test_code
+    )
 
 
 _problem_1 = """\
