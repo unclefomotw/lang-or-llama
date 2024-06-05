@@ -119,7 +119,14 @@ Someone wrote a solution, but an error occurred when QA made a test
 {code}
 ```
 
-You mission is to validate the testing code block from QA.  Check whether the QA code itself is reasonable or not
+And the error was:
+```
+{ai_test_result_stderr}
+```
+
+You mission is to validate the testing code block from QA.  Check whether the QA code itself is reasonable or not.
+Focus on the wrong test cases if applicable.  Be very strict to the test cases.
+If you are not confident about the correctness of the expected answer, consider the case be invalid
 
 You can output your reasoning and thoughts concisely.  Output the result in the last line in this fixed format:
 * `Validation result: yes` , if it's reasonable.

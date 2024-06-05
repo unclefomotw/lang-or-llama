@@ -72,7 +72,7 @@ class AgentState(TypedDict):
 def get_codegen_workflow() -> StateGraph:
     _llm = ChatOpenAI(model_name="gpt-3.5-turbo", temperature=0.001)
 
-    test_coding_llm = _llm
+    test_coding_llm = ChatOpenAI(model_name="gpt-3.5-turbo", temperature=0.1)
     test_validation_llm = _llm
 
     _system_message = SystemMessage(content=MAIN_CODE_GEN_SYSTEM_PROMPT)
@@ -94,7 +94,10 @@ def get_codegen_workflow() -> StateGraph:
             return {"ai_test_code": None}
 
         code = extract_code(content, "===test-start===", "===test-end===")
-        return {"ai_test_code": code}
+        return {
+            "ai_test_code": code,
+            "last_test_result": None,  # reset due to potential test regeneration
+        }
 
     def node_validate_test_code(state: AgentState):
         test_code = state["ai_test_code"]
@@ -141,8 +144,8 @@ def get_codegen_workflow() -> StateGraph:
     def node_generate_main_code(state: AgentState):
         problem = state["problem"]
 
-        if not state["main_code"]:
-            # There's no main code generated; 1st gen, no reflection yet
+        if (not state["main_code"]) or (not state["last_test_result"]):
+            # No reflection since no main code is generated, or no (valid) tests were performed
             message = HumanMessage(
                 content=MAIN_CODE_GEN_USER_PROMPT.format(
                     problem_description=problem.problem_description,
@@ -255,7 +258,7 @@ def get_codegen_workflow() -> StateGraph:
         source="test_with_ai",
         path=to_regenerate_main_code,
         path_map={
-            "yes": "generate_main_code",
+            "yes": "validate_test_code",  # can be a mistake in AI test code
             "no": END  # TODO: human-in-the-loop / human node?
         }
     )
