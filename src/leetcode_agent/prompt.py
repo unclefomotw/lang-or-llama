@@ -1,7 +1,3 @@
-import re
-from typing import Optional
-
-
 MAIN_CODE_GEN_SYSTEM_PROMPT = """\
 You are an excellent python programmer that writes python to solve coding competition problems.
 You will be given a problem description, input / output examples, and the interface of the function that will follow.
@@ -96,38 +92,14 @@ Given a coding problem:
 {problem_description}
 ```
 
-and a code that attempts to solve the problem:
+Someone wrote a solution, but an error occurred when QA made a test
 ```
-{main_code}
-```
-
-When executing the main code together with this testing code from QA, an error occurred
-```
-# QA code
-{test_code}
-```
-Error:
-```
-{ai_test_result_stderr}
+{code}
 ```
 
-You mission is to validate the testing code from QA.  Check whether the QA code itself is reasonable or not
+You mission is to validate the testing code block from QA.  Check whether the QA code itself is reasonable or not
 
 You can output your reasoning and thoughts concisely.  Output the result in the last line in this fixed format:
 * `Validation result: yes` , if it's reasonable.
 * `Validation result: no` , if it's not reasonable.
 """
-
-
-def extract_code(content: str, head_sep: str, tail_sep: str) -> Optional[str]:
-    """Get the string between two separators within the content."""
-
-    escaped_head_sep = re.escape(head_sep)
-    escaped_tail_sep = re.escape(tail_sep)
-    pattern = f'{escaped_head_sep}(.*?){escaped_tail_sep}'
-
-    m = re.search(pattern, content, re.DOTALL)
-    if m:
-        return m.group(1)
-    else:
-        return None

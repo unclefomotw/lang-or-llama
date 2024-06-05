@@ -5,6 +5,7 @@ class LeetCodeProblem(BaseModel):
     problem_description: str
     example_description: str
     solution_interface: str
+    example_test_code: str
 
 
 _problem_1 = """\
@@ -34,8 +35,15 @@ class Solution:
     def lengthOfLongestSubstring(self, s: str) -> int:
 """
 
+_problem_1_example_test = """\
+assert Solution().lengthOfLongestSubstring("abcabcbb") == 3
+assert Solution().lengthOfLongestSubstring("bbbbb") == 1
+assert Solution().lengthOfLongestSubstring("pwwkew") == 3
+"""
+
 PROBLEM_1 = LeetCodeProblem(
     problem_description=_problem_1,
     example_description=_problem_1_examples,
-    solution_interface=_problem_1_interface
+    solution_interface=_problem_1_interface,
+    example_test_code=_problem_1_example_test
 )

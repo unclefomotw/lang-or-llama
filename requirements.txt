@@ -21,3 +21,6 @@ langgraph
 # Instrumentation
 langtrace-python-sdk
 langsmith
+
+# Misc, for example app
+requests
