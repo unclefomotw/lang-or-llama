@@ -1,5 +1,4 @@
 import argparse
-import pprint
 from enum import Enum
 from typing import TypedDict, Annotated
 
@@ -22,11 +21,13 @@ from src.leetcode_agent.prompt import (
     TEST_CODE_VALIDATION_PROMPT,
     TEST_CODE_VALIDATION_WITH_ERRORS_PROMPT,
 )
-from src.leetcode_agent.util import extract_code, combine_test_with_code
-
+from src.leetcode_agent.util import (
+    combine_test_with_code,
+    extract_code,
+    print_node_output
+)
 
 AI_TEST_REVISION_LIMIT = 2
-MAIN_CODE_REVISION_LIMIT = 4
 
 
 class CodeExecutionResult(BaseModel):
@@ -61,6 +62,9 @@ class TestType(Enum):
     AI = 1
     EXAMPLES = 2
 
+    def __str__(self):
+        return self.name
+
 
 class AgentState(TypedDict):
     # Chat history of solution-generating LLM
@@ -76,6 +80,7 @@ class AgentState(TypedDict):
     # Number of generations
     ai_test_code_revision: int
     main_code_revision: int
+    main_code_revision_limit: int
 
     # Flags
     is_main_code_good: bool
@@ -254,6 +259,22 @@ def get_codegen_workflow() -> StateGraph:
             "last_test_type": TestType.AI
         }
 
+    def node_finalize_answer(state: AgentState):
+        print("\n=== Here is the result ===\n")
+
+        print(">>>> SOLUTION <<<<")
+        print(state["main_code"])
+        print(">> SOLUTION END <<\n\n")
+
+        if state["is_main_code_good"]:
+            print("This code should work.  Please verify.")
+        else:
+            print(f"This code didn't pass the test from {state["last_test_type"]}:\n")
+            print(state["last_test_result"].stderr, end="\n\n")
+
+        if state.get("skip_ai_test_code", False):
+            print("BTW, I tried AI-generated tests but skipped, because the tests themselves have problems.\n")
+
     def to_regenerate_ai_test_code(state: AgentState) -> str:
         revision = state.get("ai_test_code_revision") or 0
         if revision >= AI_TEST_REVISION_LIMIT:
@@ -266,13 +287,20 @@ def get_codegen_workflow() -> StateGraph:
 
     def to_regenerate_main_code(state: AgentState) -> str:
         revision = state.get("main_code_revision") or 0
-        if revision >= MAIN_CODE_REVISION_LIMIT:
+        revision_limit = state.get("main_code_revision_limit", 4)
+        if revision >= revision_limit:
             return "no"
 
         if state.get("is_main_code_good", False):
             return "no"
         else:
             return "yes"
+
+    def has_human_comment(state: AgentState) -> str:
+        if state.get("human_comment_on_main_code"):
+            return "yes"
+        else:
+            return "no"
 
     workflow = StateGraph(AgentState)
 
@@ -281,6 +309,7 @@ def get_codegen_workflow() -> StateGraph:
     workflow.add_node("generate_main_code", node_generate_main_code)
     workflow.add_node("test_with_examples", node_test_main_with_examples)
     workflow.add_node("test_with_ai", node_test_main_with_ai_tests)
+    workflow.add_node("finalize_answer", node_finalize_answer)
 
     workflow.set_entry_point("generate_ai_test_code")
 
@@ -307,7 +336,15 @@ def get_codegen_workflow() -> StateGraph:
         path=to_regenerate_main_code,
         path_map={
             "yes": "validate_test_code",  # can be a mistake in AI test code
-            "no": END  # TODO: human-in-the-loop / human node?
+            "no": "finalize_answer"
+        }
+    )
+    workflow.add_conditional_edges(
+        source="finalize_answer",
+        path=has_human_comment,
+        path_map={
+            "yes": "generate_main_code",
+            "no": END
         }
     )
 
@@ -321,11 +358,11 @@ def solve_leetcode(leetcode_problem: LeetCodeProblem):
         checkpointer=MemorySaver()
     )
 
-    for s in graph.stream({"problem": leetcode_problem}, config):
-        pprint.pprint(s, width=120)
-
-    print("=== AI GENERATED SOLUTION ===")
-    print(graph.get_state(config).values["main_code"])
+    # TODO: human-in-the-loop / human feedback
+    for s in graph.stream(
+            {"problem": leetcode_problem, "main_code_revision_limit": 4},
+            config=config):
+        print_node_output(s)
 
 
 def main():

@@ -1,5 +1,8 @@
+import pprint
 import re
 from typing import Optional
+
+from colorama import Fore, Style
 
 
 def extract_code(content: str, head_sep: str, tail_sep: str) -> Optional[str]:
@@ -20,3 +23,9 @@ def extract_code(content: str, head_sep: str, tail_sep: str) -> Optional[str]:
 
 def combine_test_with_code(main_code: str, test_code: str) -> str:
     return f"# Your solution:\n{main_code}\n\n# QA test:\n{test_code}"
+
+
+def print_node_output(s):
+    print(Style.DIM, end="")
+    pprint.pprint(s, width=120)
+    print(Style.RESET_ALL, end="")
