@@ -34,7 +34,6 @@ def read_problem(directory: Union[str, Path]) -> LeetCodeProblem:
     example_description = _read_text(directory / "EXAMPLE")
     solution_interface = _read_text(directory / "INTERFACE")
     example_test_code = _read_text(directory / "TEST")
-    print(type(problem_description))
 
     return LeetCodeProblem(
         problem_description=problem_description,
