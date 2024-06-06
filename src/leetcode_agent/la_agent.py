@@ -24,7 +24,7 @@ from src.leetcode_agent.prompt import (
 from src.leetcode_agent.util import (
     combine_test_with_code,
     extract_code,
-    print_node_output
+    print_node_output, multiline_input
 )
 
 AI_TEST_REVISION_LIMIT = 2
@@ -92,7 +92,9 @@ class AgentState(TypedDict):
     last_test_type: TestType
 
     # Human in the loop: feedback to give to main LLM
+    has_human_interference: bool
     human_comment_on_main_code: str
+    human_test_code: Annotated[str, lambda a, b: f"{a}\n{b}"]
 
 
 def get_codegen_workflow() -> StateGraph:
@@ -231,6 +233,10 @@ def get_codegen_workflow() -> StateGraph:
             return {"is_main_code_good": False}
 
         example_test_code = state["problem"].example_test_code
+
+        if state["human_test_code"]:
+            example_test_code += "\n" + state["human_test_code"]
+
         code_result = execute_code(
             combine_test_with_code(main_code, example_test_code)
         )
@@ -259,7 +265,7 @@ def get_codegen_workflow() -> StateGraph:
             "last_test_type": TestType.AI
         }
 
-    def node_finalize_answer(state: AgentState):
+    def node_give_answer(state: AgentState):
         print("\n=== Here is the result ===\n")
 
         print(">>>> SOLUTION <<<<")
@@ -274,6 +280,10 @@ def get_codegen_workflow() -> StateGraph:
 
         if state.get("skip_ai_test_code", False):
             print("BTW, I tried AI-generated tests but skipped, because the tests themselves have problems.\n")
+
+    def node_finalize(state: AgentState):
+        # resource cleanup or something like that
+        pass
 
     def to_regenerate_ai_test_code(state: AgentState) -> str:
         revision = state.get("ai_test_code_revision") or 0
@@ -296,8 +306,8 @@ def get_codegen_workflow() -> StateGraph:
         else:
             return "yes"
 
-    def has_human_comment(state: AgentState) -> str:
-        if state.get("human_comment_on_main_code"):
+    def has_human_interference(state: AgentState) -> str:
+        if state.get("has_human_interference"):
             return "yes"
         else:
             return "no"
@@ -309,7 +319,8 @@ def get_codegen_workflow() -> StateGraph:
     workflow.add_node("generate_main_code", node_generate_main_code)
     workflow.add_node("test_with_examples", node_test_main_with_examples)
     workflow.add_node("test_with_ai", node_test_main_with_ai_tests)
-    workflow.add_node("finalize_answer", node_finalize_answer)
+    workflow.add_node("give_answer", node_give_answer)
+    workflow.add_node("finalize", node_finalize)
 
     workflow.set_entry_point("generate_ai_test_code")
 
@@ -336,17 +347,18 @@ def get_codegen_workflow() -> StateGraph:
         path=to_regenerate_main_code,
         path_map={
             "yes": "validate_test_code",  # can be a mistake in AI test code
-            "no": "finalize_answer"
+            "no": "give_answer"
         }
     )
     workflow.add_conditional_edges(
-        source="finalize_answer",
-        path=has_human_comment,
+        source="give_answer",
+        path=has_human_interference,
         path_map={
             "yes": "generate_main_code",
-            "no": END
+            "no": "finalize"
         }
     )
+    workflow.add_edge("finalize", END)
 
     return workflow
 
@@ -355,14 +367,46 @@ def solve_leetcode(leetcode_problem: LeetCodeProblem):
     config = {"configurable": {"thread_id": "user-24601-conv-1337"}}
 
     graph = get_codegen_workflow().compile(
-        checkpointer=MemorySaver()
+        checkpointer=MemorySaver(),
+        interrupt_after=["give_answer"]
     )
 
-    # TODO: human-in-the-loop / human feedback
-    for s in graph.stream(
-            {"problem": leetcode_problem, "main_code_revision_limit": 4},
-            config=config):
-        print_node_output(s)
+    # Run the graph with the initial input
+    initial_state = {"problem": leetcode_problem, "main_code_revision_limit": 4}
+    for s in graph.stream(initial_state, config=config):
+        print_node_output(s)  # TODO: verbose
+
+    # XXX: This pattern only works when the upcoming state at the interruption
+    #      is not END, so we can distinguish END from interruption.
+    #      Another pattern is to use `while True:` with conditional break by user_input
+    while graph.get_state(config).next:
+        user_test = multiline_input("Add more asserting tests if necessary")
+        user_comment = input('Provide feedback to revise the code (just enter if none):')
+
+        if user_test or user_comment:
+            state = graph.get_state(config).values
+            current_main_code_revision_limit = state["main_code_revision_limit"]
+
+            graph.update_state(
+                config=config,
+                values={
+                    "has_human_interference": True,
+                    "human_comment_on_main_code": user_comment,
+                    "human_test_code": user_test,
+                    "main_code_revision_limit": current_main_code_revision_limit + 2
+                }
+            )
+        else:
+            graph.update_state(
+                config=config,
+                values={
+                    "human_comment_on_main_code": "",
+                    "has_human_interference": False
+                }
+            )
+
+        for s in graph.stream(None, config=config):
+            print_node_output(s)  # TODO: verbose
 
 
 def main():
