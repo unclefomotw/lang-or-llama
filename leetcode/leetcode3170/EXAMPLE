@@ -1,0 +1,11 @@
+Example 1:
+Input: s = "aaba*"
+Output: "aab"
+Explanation:
+We should delete one of the 'a' characters with '*'. If we choose s[3], s becomes the lexicographically smallest.
+
+Example 2:
+Input: s = "abc"
+Output: "abc"
+Explanation:
+There is no '*' in the string.

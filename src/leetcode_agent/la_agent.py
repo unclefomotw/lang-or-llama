@@ -100,6 +100,8 @@ def get_codegen_workflow() -> StateGraph:
     main_coding_llm = (lambda messages: [_system_message] + messages) | _llm
 
     def node_generate_ai_test_code(state: AgentState):
+        print("\n=== Generate ai test code ===\n")
+
         problem = state["problem"]
         revision = state.get("ai_test_code_revision") or 0
 
@@ -125,6 +127,8 @@ def get_codegen_workflow() -> StateGraph:
         }
 
     def node_validate_test_code(state: AgentState):
+        print("\n=== Validate ai test code ===\n")
+
         test_code = state["ai_test_code"]
         revision = state.get("main_code_revision") or 0
 
@@ -168,6 +172,8 @@ def get_codegen_workflow() -> StateGraph:
             return {"is_ai_test_code_good": True}
 
     def node_generate_main_code(state: AgentState):
+        print("\n=== Generate main code ===\n")
+
         problem = state["problem"]
         revision = state.get("main_code_revision") or 0
 
@@ -213,6 +219,8 @@ def get_codegen_workflow() -> StateGraph:
         }
 
     def node_test_main_with_examples(state: AgentState):
+        print("\n=== Test main code w/ examples ===\n")
+
         main_code = state["main_code"]
         if not main_code:
             return {"is_main_code_good": False}
@@ -228,6 +236,8 @@ def get_codegen_workflow() -> StateGraph:
         }
 
     def node_test_main_with_ai_tests(state: AgentState):
+        print("\n=== Test main code w/ AI tests ===\n")
+
         if state.get("skip_ai_test_code", False):
             return {}
 

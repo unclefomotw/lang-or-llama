@@ -1,0 +1,2 @@
+assert Solution().clearStars("aaba*") == "aab"
+assert Solution().clearStars("abc") == "abc"

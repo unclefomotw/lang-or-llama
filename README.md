@@ -23,3 +23,4 @@ For details, see the README.md of each use case respectively
 1. src/naive_rag - Basic RAG with some non-framework-default settings
 2. src/chat_rag - RAG with multiple rounds of chat
 3. src/simple_react - ReAct prompting + tools
+4. src/leetcode_agent - LeetCode solver via LangChain / LangGraph agent
