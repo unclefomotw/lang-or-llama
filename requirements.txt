@@ -1,5 +1,5 @@
 llama-index==0.10.35
-langchain==0.2.0
+langchain==0.2.3
 # Some features are still in langchain-community, e.g. PDF
 langchain-community
 
