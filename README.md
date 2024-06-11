@@ -24,3 +24,4 @@ For details, see the README.md of each use case respectively
 2. src/chat_rag - RAG with multiple rounds of chat
 3. src/simple_react - ReAct prompting + tools
 4. src/leetcode_agent - LeetCode solver via LangChain / LangGraph agent
+5. src/super_step - Some confusing examples for LangGraph fan-out and fan-in branching
