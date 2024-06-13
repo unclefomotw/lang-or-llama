@@ -45,6 +45,10 @@ def main():
         interrupt_after=["n3"]
     )
 
+    # In .update_state()
+    #   * config is the starting "time" (step), it's about the past, "when" to start
+    #   * as_node is the starting node, it's about "where" to start
+
     # Example 1: change the past state, using non-thread_ts config + as_node
     print("## .update_state(<no thread_ts>)")
 
