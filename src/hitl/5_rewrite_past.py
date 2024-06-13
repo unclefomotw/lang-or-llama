@@ -49,8 +49,40 @@ def main():
     #   * config is the starting "time" (step), it's about the past, "when" to start
     #   * as_node is the starting node, it's about "where" to start
 
-    # Example 1: change the past state, using non-thread_ts config + as_node
-    print("## .update_state(<no thread_ts>)")
+    # Case 1: Go to past (time) as if it had never happened
+    print("## .update_state(<thread_ts>)")
+
+    r = graph.invoke({"crew": []}, config=session(2))
+    print(f"Result: {r}")
+    print(graph.get_state(session(2)))
+
+    for h in graph.get_state_history(session(2)):
+        if h.next == ("n2",):
+            past_config = h.config
+            break
+
+    # Update
+    graph.update_state(
+        config=past_config,
+        values={"crew": [66, 77], "v": "BAD GUY"}
+    )
+    print("\n>> after update")
+    print(graph.get_state(session(2)))
+
+    # Resume
+    print("\n>> resume")
+    r = graph.invoke(None, config=session(2))
+    print(f"Result: {r}")
+
+    print("\n>> history (notice the metadata.step)")
+    for h in graph.get_state_history(session(2)):
+        print(h)
+
+    print("\n")
+
+    #
+    # Case 2: go to the past node to update, using non-thread_ts config (now) + as_node (where)
+    print("## .update_state(<no thread_ts> + as_node)")
 
     r = graph.invoke({"crew": []}, config=session(1))
     print(f"Result: {r}")
@@ -76,34 +108,44 @@ def main():
 
     print("\n")
 
-    # Example 2: change the past state, by the specific thread_ts config
-    print("## .update_state(<thread_ts>)")
+    #
+    # Case 3: Go back to past (time) + past node (where), but they are different
+    print("## .update_state(<thread_ts> + as_node)")
 
-    r = graph.invoke({"crew": []}, config=session(2))
+    r = graph.invoke({"crew": []}, config=session(3))
     print(f"Result: {r}")
-    print(graph.get_state(session(2)))
+    print(graph.get_state(session(3)))
 
-    for h in graph.get_state_history(session(2)):
-        if h.next == ("n2", ):
+    for h in graph.get_state_history(session(3)):
+        if h.next == ("n3", ):
             past_config = h.config
             break
+    # The history of the first two steps will retain
+    print(f"\npast config: {past_config}\n")
 
-    # Update
+    # Update: the starting point will be after n1 (i.e. n2)
     graph.update_state(
         config=past_config,
-        values={"crew": [66, 77], "v": "BAD GUY"}
+        values={"crew": [66, 77], "v": "BAD GUY"},
+        as_node="n1"
     )
     print("\n>> after update")
-    print(graph.get_state(session(2)))
+    print(graph.get_state(session(3)))
 
     # Resume
     print("\n>> resume")
-    r = graph.invoke(None, config=session(2))
+    r = graph.invoke(None, config=session(3))
     print(f"Result: {r}")
 
+    # Number 2 sees BAD GUY coming in
+    # Number 3 sees No. 2 coming in
+    # Result: {'v': 'No. 3', 'crew': [1, 2, 66, 77, 2, 3]}
+
     print("\n>> history (notice the metadata.step)")
-    for h in graph.get_state_history(session(2)):
+    for h in graph.get_state_history(session(3)):
         print(h)
+
+    print("\n")
 
 
 if __name__ == '__main__':
