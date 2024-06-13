@@ -72,6 +72,10 @@ def main():
     ):
         print(s)
 
+    print("\n>> history (notice the metadata.step)")
+    for h in graph.get_state_history(session(1)):
+        print(h)
+
 
 if __name__ == '__main__':
     main()
