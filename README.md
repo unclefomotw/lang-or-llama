@@ -25,3 +25,4 @@ For details, see the README.md of each use case respectively
 3. src/simple_react - ReAct prompting + tools
 4. src/leetcode_agent - LeetCode solver via LangChain / LangGraph agent
 5. src/super_step - Some confusing examples for LangGraph fan-out and fan-in branching
+6. src/hitl - Some commonn examples of Human-in-the-Loop
