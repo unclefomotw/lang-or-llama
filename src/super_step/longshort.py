@@ -73,6 +73,7 @@ def main():
         print(s)
         print()
         i += 1
+    print(flow.get_state(config))
 
 
 if __name__ == '__main__':
